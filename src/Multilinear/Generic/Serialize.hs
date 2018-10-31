@@ -13,7 +13,8 @@ module Multilinear.Generic.Serialize (
     toBinary, toBinaryFile,
     fromBinary, fromBinaryFile,
     Multilinear.Generic.Serialize.toJSON, toJSONFile,
-    Multilinear.Generic.Serialize.fromJSON, fromJSONFile
+    Multilinear.Generic.Serialize.fromJSON, fromJSONFile,
+    fromCSV, toCSV
 ) where
 
 import           Codec.Compression.GZip
@@ -28,6 +29,7 @@ import           Data.Either
 import           Data.Serialize
 import qualified Data.Vector                as Boxed
 import           Data.Vector.Serialize      ()
+import           Multilinear.Class
 import           Multilinear.Generic
 import qualified Multilinear.Index.Finite   as Finite
 import           Multilinear.Index.Finite.Serialize ()
@@ -131,3 +133,22 @@ fromCSV x = case x of
     else EitherT $ return $ Left $ SomeException $ TypeError deserializationError
 
   _ -> \_ _ -> return $ Err invalidIndices
+
+
+{-| Write matrix to CSV file. -}
+{-# INLINE toCSV                    #-}
+toCSV :: (
+    Num a, Serialize a
+  ) => Tensor a  -- ^ Matrix to serialize. If given tensor os not a matrix, an error occurs and no data (0 rows) are saved to file. 
+    -> String    -- ^ CSV file name
+    -> Char      -- ^ Separator expected to be used in this CSV file
+    -> IO Int    -- ^ Number of rows written
+
+toCSV t = case order t of
+  (1,1) -> \fileName separator ->
+    let t' = _standardize t
+        elems = Boxed.toList $ Boxed.toList . tensorScalars <$> tensorsFinite t'
+        encodedElems = (Data.Serialize.encode <$>) <$> elems
+    in  writeCSVFile (CSVS separator (Just '"') (Just '"') separator) fileName encodedElems
+
+  _ -> \_ _ -> return 0

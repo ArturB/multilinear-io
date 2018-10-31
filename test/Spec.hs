@@ -5,6 +5,7 @@ import           Control.Monad.Trans.Either
 import           Control.Monad.Trans.Class
 import           Multilinear.Class          as Multilinear
 import           Multilinear.Generic
+import           Multilinear.Generic.Serialize
 import qualified Multilinear.Matrix         as Matrix
 import qualified Multilinear.Tensor         as Tensor
 import qualified Multilinear.Vector         as Vector
@@ -82,11 +83,11 @@ hopfield ns ps cs x c =
 prog :: EitherT SomeException IO ()
 prog = do
   -- wczytywanie danych
-  mlpInput <- Matrix.fromCSV "tj" mlp_input ';'
-  mlpExp   <- Matrix.fromCSV "tj" mlp_expected ';'
-  mlpClas  <- Matrix.fromCSV "tj" mlp_classify ';'
-  hopInput <- Matrix.fromCSV "tj" hopfield_input ';'
-  hopClas  <- Matrix.fromCSV "tj" hopfield_classify ';'
+  mlpInput <- fromCSV "tj" mlp_input ';'
+  mlpExp   <- fromCSV "tj" mlp_expected ';'
+  mlpClas  <- fromCSV "tj" mlp_classify ';'
+  hopInput <- fromCSV "tj" hopfield_input ';'
+  hopClas  <- fromCSV "tj" hopfield_classify ';'
   let mx t = Multilinear.transpose $ mlpInput $$| ("t",[t])
   let me t = Multilinear.transpose $ mlpExp $$| ("t",[t])
   let mc t = Multilinear.transpose $ mlpClas $$| ("t",[t])
@@ -97,10 +98,10 @@ prog = do
          hopInput `size` "j", hopInput `size` "t", hopClas `size` "t")
   -- perceptron
   let mlp_net = perceptron ns_mlp layers ps_mlp cs_mlp mx me mc
-  smlp <- lift $ Matrix.toCSV mlp_net mlp_output ';'
+  smlp <- lift $ toCSV mlp_net mlp_output ';'
   -- hopfield
   let hop_net = hopfield ns_hop ps_hop cs_hop hx hc
-  shop <- lift $ Matrix.toCSV hop_net hopfield_output ';'
+  shop <- lift $ toCSV hop_net hopfield_output ';'
   lift $ putStrLn $ "Perceptron: " ++ show smlp ++ " vectors saved to '" ++ mlp_output ++ "'."
   lift $ putStrLn $ "Hopfield: " ++ show shop ++ " vectors saved to '" ++ hopfield_output ++ "'."
   return ()
