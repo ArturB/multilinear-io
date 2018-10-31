@@ -1,6 +1,6 @@
 name:                multilinear-io
 version:             0.2.0
-github:              "ArturB/multilinear"
+github:              "ArturB/multilinear-io"
 license:             BSD3
 author:              "Artur M. Brodzki"
 maintainer:          "artur@brodzki.org"
@@ -10,13 +10,13 @@ extra-source-files:
 - README.md
 
 # Metadata used when publishing your package
-synopsis:            Efficient (multi)linear algebra implementation
+synopsis:            Input/output capability for multilinear package. 
 category:            Machine learning
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/ArturB/multilinear#readme>
+description:         Please see the README on GitHub at <https://github.com/ArturB/multilinear-io#readme>
 
 dependencies:
 - base >= 4.7 && < 5
