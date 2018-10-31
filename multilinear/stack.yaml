@@ -40,7 +40,6 @@ packages:
 # Dependency packages to be pulled from upstream that are not in the resolver
 # (e.g., acme-missiles-0.3)
 extra-deps:
-  - multilinear
   - attoparsec-enumerator-0.3.4
   - enumerator-0.4.20
   - csv-enumerator-0.10.2.0
