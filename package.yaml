@@ -1,5 +1,5 @@
 name:                multilinear-io
-version:             0.2.0
+version:             0.2.1.2
 github:              "ArturB/multilinear-io"
 license:             BSD3
 author:              "Artur M. Brodzki"
@@ -16,7 +16,7 @@ category:            Machine learning
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/ArturB/multilinear-io#readme>
+description:         "Input & output capability for multilinear package <https://hackage.haskell.org/package/multilinear>. Supports various file formats: binary, CSV, JSON. More information available on GitHub: <https://github.com/ArturB/multilinear-io#readme>"
 
 dependencies:
 - base >= 4.7 && < 5
@@ -38,7 +38,7 @@ library:
   - cereal-vector
   - csv-enumerator
   - either
-  - multilinear
+  - multilinear >= 0.2.0 && < 0.3
   - transformers
   - vector
   - zlib
@@ -53,7 +53,7 @@ tests:
     - -with-rtsopts=-N  
     dependencies:
     - either
-    - multilinear
+    - multilinear >= 0.2.0 && < 0.3
     - multilinear-io
     - transformers
 
@@ -67,7 +67,7 @@ benchmarks:
     - -with-rtsopts=-N
     dependencies:
     - criterion
-    - multilinear
+    - multilinear >= 0.2.0 && < 0.3
     - multilinear-io
     - deepseq
     - either
