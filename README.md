@@ -12,3 +12,12 @@ This package provides conduit-based input/output capability for [Multilinear](ht
 - CSV
 
 Other formats to be proposed and implemented. 
+
+### Contribution
+
+If you want to contribute to this library, contact with me. 
+
+### Who do I talk to?
+
+All copyrights to Artur M. Brodzki.
+Contact mail: artur@brodzki.org
