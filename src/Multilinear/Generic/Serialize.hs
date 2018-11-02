@@ -12,24 +12,25 @@ Portability : Windows/POSIX
 module Multilinear.Generic.Serialize (
     toBinary, toBinaryFile,
     fromBinary, fromBinaryFile,
-    Multilinear.Generic.Serialize.toJSON, toJSONFile,
-    Multilinear.Generic.Serialize.fromJSON, fromJSONFile,
-    --fromCSV, toCSV
+    Multilinear.Generic.Serialize.toJSON, 
+    Multilinear.Generic.Serialize.toJSONFile,
+    Multilinear.Generic.Serialize.fromJSON, 
+    Multilinear.Generic.Serialize.fromJSONFile,
+    fromCSVFile, toCSVFile
 ) where
 
 import           Codec.Compression.GZip
 import           Conduit
-import           Control.Exception
-import           Control.Monad.Trans.Class
 import           Control.Monad.Trans.Except
 import           Control.Monad.Trans.Maybe
 import           Data.Aeson
+import qualified Data.ByteString.Internal   as BS
 import qualified Data.ByteString.Lazy       as ByteString
+import           Data.Csv
 import           Data.Either
 import           Data.Serialize
 import qualified Data.Vector                as Boxed
 import           Data.Vector.Serialize      ()
-import           Multilinear.Class
 import           Multilinear.Generic
 import qualified Multilinear.Index.Finite   as Finite
 import           Multilinear.Index.Finite.Serialize ()
@@ -41,12 +42,20 @@ instance Serialize a => Serialize (Tensor a)
 instance ToJSON a => ToJSON (Tensor a)
 -- JSON deserialization instance
 instance FromJSON a => FromJSON (Tensor a)
+-- CSV serialization instance
+instance ToField a => ToRecord (Tensor a) where
+  toRecord (Scalar x) = record [toField x]
+  toRecord (SimpleFinite _ scalars) = toRecord scalars
+  toRecord _ = error "Only 1-order tensor may be converted to record!"
+instance FromField a => FromRecord (Tensor a) where
+  parseRecord v = 
+    if Boxed.length v == 1 then
+      Scalar <$> v .! 0
+    else
+      --FiniteTensor (Finite.Covariant (Boxed.length v) "i") <$> v
+      error "non-scalar"
 
-invalidIndices :: String -- ^ CSV error message
-invalidIndices = "Indices and its sizes not compatible with structure of matrix!"
 
-deserializationError :: String -- ^ CSV error message
-deserializationError = "Components deserialization error!"
 
 {-| Serialize tensor to zlib compressed binary string -}
 toBinary :: (
@@ -58,12 +67,13 @@ toBinary = compress . Data.Serialize.encodeLazy
 {-| Write tensor to binary file. Uses compression with gzip -}
 toBinaryFile :: (
     Serialize a 
-  ) => String    -- ^ File name
-    -> Tensor a  -- ^ Tensor to serialize
+  ) => Tensor a  -- ^ Tensor to serialize
+    -> String    -- ^ File name
     -> IO ()
-toBinaryFile fileName = 
+toBinaryFile t fileName = do
+  let bs = toBinary t
   runConduitRes $ 
-    sourceLazy . bs .| sinkFile fileName
+    sourceLazy bs .| sinkFile fileName
 
 {-| Deserialize tensor from zlib compressed binary string -}
 fromBinary :: (
@@ -75,11 +85,12 @@ fromBinary = Data.Serialize.decodeLazy . decompress
 {-| Read tensor from binary file -}
 fromBinaryFile :: (
     Serialize a
-  ) => String                      -- ^ File path. 
-    -> Except String IO (Tensor a) -- ^ Deserialized tensor or an error message
+  ) => String                       -- ^ File path. 
+    -> ExceptT String IO (Tensor a) -- ^ Deserialized tensor or an error message
 fromBinaryFile fileName = do
-  contents <- lift $ runConduitRes $ sourceFile fileName .| sinkLazy
-  except $ fromBinary contents
+  contents <- lift $ runConduitRes $ 
+    sourceFile fileName .| sinkLazy
+  ExceptT $ return $ fromBinary contents
 
 {-| Serialize tensor to JSON string -}
 toJSON :: (
@@ -91,10 +102,13 @@ toJSON = Data.Aeson.encode
 {-| Write tensor to JSON file -}
 toJSONFile :: (
     ToJSON a
-  ) => String   -- ^ File path. 
-    -> Tensor a -- ^ Tensor to serialize
+  ) => Tensor a -- ^ Tensor to serialize
+    -> String   -- ^ File path. 
     -> IO ()
-toJSONFile name = ByteString.writeFile name . Multilinear.Generic.Serialize.toJSON
+toJSONFile t fileName = do
+  let bs = Multilinear.Generic.Serialize.toJSON t
+  runConduitRes $ 
+    sourceLazy bs .| sinkFile fileName
 
 {-| Deserialize tensor from JSON string -}
 fromJSON :: (
@@ -108,50 +122,47 @@ fromJSONFile :: (
     FromJSON a
   ) => String               -- ^ File path. 
     -> MaybeT IO (Tensor a) -- ^ Deserialized tensor or Nothing, if error occured. 
-fromJSONFile name = do
-    contents <- lift $ ByteString.readFile name
-    MaybeT $ return $ Multilinear.Generic.Serialize.fromJSON contents
+fromJSONFile fileName = do
+  contents <- lift $ runConduitRes $ 
+    sourceFile fileName .| sinkLazy
+  MaybeT $ return $ Multilinear.Generic.Serialize.fromJSON contents
 
-{-| Read tensor (matrix) components from CSV file. -}
---{-# INLINE fromCSV #-}
-{-fromCSV :: (
-    Num a, Serialize a
-  ) => String                                  -- ^ Indices names (one character per index, first character: rows index, second character: columns index)
-    -> String                                  -- ^ CSV file name
-    -> Char                                    -- ^ Separator expected to be used in this CSV file
-    -> EitherT SomeException IO (Tensor a)     -- ^ Generated matrix or error message
+{-| Write tensor to CSV file -}
+toCSVFile :: (
+  ToField a
+  ) => Tensor a -- ^ Tensor to serialize
+    -> String   -- ^ File path
+    -> IO ()
+toCSVFile (FiniteTensor _ vrows) fileName = do
+  let rows = Boxed.toList vrows
+  let bs = Data.Csv.encode rows
+  runConduitRes $ 
+    sourceLazy bs .| sinkFile fileName
+toCSVFile (SimpleFinite _ vs) fileName = do
+  let rows = [vs]
+  let bs = Data.Csv.encode rows
+  runConduitRes $ 
+    sourceLazy bs .| sinkFile fileName
 
-fromCSV x = case x of
-  [u,d] -> \fileName separator -> do
-    csv <- EitherT $ readCSVFile (CSVS separator (Just '"') (Just '"') separator) fileName
-    let components = (Data.Serialize.decode <$> ) <$> csv
-    let rows = length components
-    let columns = if rows > 0 then length $ rights (head components) else 0
-    if rows > 0 && columns > 0
-    then return $ 
-      FiniteTensor (Finite.Contravariant rows [u]) $ (
-        SimpleFinite (Finite.Covariant columns [d]) . Boxed.fromList . rights
-      ) <$> Boxed.fromList components
-    else EitherT $ return $ Left $ SomeException $ TypeError deserializationError
 
-  _ -> \_ _ -> return $ Err invalidIndices
--}
-
-{-| Write matrix to CSV file. -}
---{-# INLINE toCSV                    #-}
-{-toCSV :: (
-    Num a, Serialize a
-  ) => Tensor a  -- ^ Matrix to serialize. If given tensor os not a matrix, an error occurs and no data (0 rows) are saved to file. 
-    -> String    -- ^ CSV file name
-    -> Char      -- ^ Separator expected to be used in this CSV file
-    -> IO Int    -- ^ Number of rows written
-
-toCSV t = case order t of
-  (1,1) -> \fileName separator ->
-    let t' = _standardize t
-        elems = Boxed.toList $ Boxed.toList . tensorScalars <$> tensorsFinite t'
-        encodedElems = (Data.Serialize.encode <$>) <$> elems
-    in  writeCSVFile (CSVS separator (Just '"') (Just '"') separator) fileName encodedElems
-
-  _ -> \_ _ -> return 0
--}
+{-| Read tensor from CSV -}
+fromCSVFile :: (
+  FromField a
+  ) => String -- ^ File path. 
+    -> Char   -- ^ CSV separator
+    -> String -- ^ Matrix indices names
+    -> ExceptT String IO (Tensor a)  -- ^ Deserialized tensor or an error message
+fromCSVFile fileName separator [conI,covI] = do
+  --let csvSettings = CSVSettings separator Nothing
+  contents <- lift $ runConduitRes $ 
+    sourceFile fileName .| sinkLazy
+  let decodedData = Data.Csv.decodeWith (DecodeOptions (BS.c2w separator)) NoHeader contents :: FromField a => Either String (Boxed.Vector (Boxed.Vector a))
+  if isLeft decodedData 
+  then do
+    let msg = fromLeft "" decodedData
+    ExceptT $ return $ Left msg
+  else do
+    let components = fromRight (Boxed.empty) decodedData
+    let rows = (\r -> SimpleFinite (Finite.Covariant (Boxed.length r) [covI]) r) <$> components
+    ExceptT $ return $ Right $ FiniteTensor (Finite.Contravariant (Boxed.length rows) [conI]) rows 
+fromCSVFile _ _ _ = error "You must provide exactly two indices names!"
