@@ -1,3 +1,3 @@
 #!/usr/bin/bash
 
-stack bench --ba '--output results.html'
+stack bench --ba '--output benchmark/results.html'

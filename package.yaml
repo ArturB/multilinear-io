@@ -28,14 +28,15 @@ default-extensions:
 - DeriveGeneric
 - FlexibleContexts
 - FlexibleInstances
-- ScopedTypeVariables
 - MultiParamTypeClasses
+- ScopedTypeVariables
 
 library:
   source-dirs: src
   dependencies:
   - aeson
   - bytestring
+  - cassava
   - cereal
   - cereal-vector
   - conduit
@@ -46,14 +47,41 @@ library:
   - zlib
 
 tests:
-  multilinear-io-test:
+  binary:
     main:                Spec.hs
-    source-dirs:         test
+    source-dirs:         test/binary
     ghc-options:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N  
     dependencies:
+    - directory
+    - either
+    - multilinear >= 0.2.0 && < 0.3
+    - multilinear-io
+    - transformers
+  json:
+    main:                Spec.hs
+    source-dirs:         test/json
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N  
+    dependencies:
+    - directory
+    - either
+    - multilinear >= 0.2.0 && < 0.3
+    - multilinear-io
+    - transformers
+  csv:
+    main:                Spec.hs
+    source-dirs:         test/csv
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N  
+    dependencies:
+    - directory
     - either
     - multilinear >= 0.2.0 && < 0.3
     - multilinear-io
@@ -69,6 +97,7 @@ benchmarks:
     - -with-rtsopts=-N
     dependencies:
     - criterion
+    - directory
     - multilinear >= 0.2.0 && < 0.3
     - multilinear-io
     - deepseq

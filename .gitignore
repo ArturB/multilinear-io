@@ -1,7 +1,13 @@
+# Untracked directiories
 *.stack-work*
-*.cabal
 *.vscode*
+
+# Untracked files
+## Exclusions 
+!benchmark/results.html
+## Ignored
+*.cabal
 *.csv*
-*.html*
 *.zlib*
 *.json*
+*.html*
