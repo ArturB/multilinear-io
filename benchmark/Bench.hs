@@ -27,22 +27,22 @@ gen j k = sin (fromIntegral j) + cos (fromIntegral k)
 writeMatrixBinaryBench :: Int -> Benchmark
 writeMatrixBinaryBench s = 
     bench (show s ++ "x" ++ show s) $ 
-        nfIO $ toBinaryFile (Matrix.fromIndices "ij" s s gen) ("benchmark/write-matrix-" ++ show s ++ ".zlib")
+        nfIO $ toBinaryFile (Matrix.fromIndices "ij" s s gen) ("benchmark/matrix-" ++ show s ++ ".zlib")
 
 readMatrixBinaryBench :: Int -> Benchmark
 readMatrixBinaryBench s = do
-    let tensorDoubleIOT = fromBinaryFile ("benchmark/write-matrix-" ++ show s ++ ".zlib") :: ExceptT String IO (Tensor Double)
+    let tensorDoubleIOT = fromBinaryFile ("benchmark/matrix-" ++ show s ++ ".zlib") :: ExceptT String IO (Tensor Double)
     bench (show s ++ "x" ++ show s) $ 
         nfIO $ runExceptT tensorDoubleIOT
 
 writeMatrixJSONBench :: Int -> Benchmark
 writeMatrixJSONBench s = 
     bench (show s ++ "x" ++ show s) $ 
-        nfIO $ toJSONFile (Matrix.fromIndices "ij" s s gen) ("benchmark/write-matrix-" ++ show s ++ ".json")
+        nfIO $ toJSONFile (Matrix.fromIndices "ij" s s gen) ("benchmark/matrix-" ++ show s ++ ".json")
 
 readMatrixJSONBench :: Int -> Benchmark
 readMatrixJSONBench s = do
-    let tensorDoubleIOT = fromJSONFile ("benchmark/write-matrix-" ++ show s ++ ".json") :: MaybeT IO (Tensor Double)
+    let tensorDoubleIOT = fromJSONFile ("benchmark/matrix-" ++ show s ++ ".json") :: MaybeT IO (Tensor Double)
     bench (show s ++ "x" ++ show s) $ 
         nfIO $ runMaybeT tensorDoubleIOT
 
