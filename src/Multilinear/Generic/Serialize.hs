@@ -11,7 +11,11 @@ Portability : Windows/POSIX
 
 module Multilinear.Generic.Serialize (
     toBinary, toBinaryFile,
-    fromBinary, fromBinaryFile
+    fromBinary, fromBinaryFile,
+    Multilinear.Generic.Serialize.toJSON, 
+    Multilinear.Generic.Serialize.toJSONFile,
+    Multilinear.Generic.Serialize.fromJSON, 
+    Multilinear.Generic.Serialize.fromJSONFile
 ) where
 
 import           Codec.Compression.GZip
@@ -28,9 +32,10 @@ import qualified Data.Vector                as Boxed
 import           Data.Vector.Serialize      ()
 import           Multilinear.Class
 import           Multilinear.Generic
-import qualified Multilinear.Index.Finite   as Finite
+import           Multilinear.Index.Finite ()
 import           Multilinear.Index.Finite.Serialize ()
 import           Multilinear.Index.Infinite.Serialize ()
+
 
 -- Binary serialization instance
 instance Serialize a => Serialize (Tensor a)
@@ -79,3 +84,38 @@ fromBinaryFile fileName = do
   contents <- lift $ runConduitRes $ 
     sourceFile fileName .| sinkLazy
   ExceptT $ return $ fromBinary contents
+
+{-| Serialize tensor to JSON string -}
+toJSON :: (
+    ToJSON a
+  ) => Tensor a              -- ^ Tensor to serialize. 
+    -> ByteString.ByteString -- ^ Tensor serialized to lazy ByteString. 
+toJSON = Data.Aeson.encode
+
+{-| Write tensor to JSON file -}
+toJSONFile :: (
+    ToJSON a
+  ) => Tensor a -- ^ Tensor to serialize
+    -> String   -- ^ File path. 
+    -> IO ()
+toJSONFile t fileName = do
+  let bs = Multilinear.Generic.Serialize.toJSON t
+  runConduitRes $ 
+    sourceLazy bs .| sinkFile fileName
+
+{-| Deserialize tensor from JSON string -}
+fromJSON :: (
+    FromJSON a
+  ) => ByteString.ByteString -- ^ ByteString to deserialize
+    -> Maybe (Tensor a)      -- ^ Deserialized tensor or Nothing, if deserialization error occured. 
+fromJSON = Data.Aeson.decode
+
+{-| Read tensor from JSON file -}
+fromJSONFile :: (
+    FromJSON a
+  ) => String               -- ^ File path. 
+    -> MaybeT IO (Tensor a) -- ^ Deserialized tensor or Nothing, if error occured. 
+fromJSONFile fileName = do
+  contents <- lift $ runConduitRes $ 
+    sourceFile fileName .| sinkLazy
+  MaybeT $ return $ Multilinear.Generic.Serialize.fromJSON contents
