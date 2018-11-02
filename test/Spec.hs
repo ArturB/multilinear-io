@@ -1,7 +1,7 @@
 module Main where
-
+{-
 import           Control.Exception.Base
-import           Control.Monad.Trans.Either
+import           Control.Monad.Trans.Except
 import           Control.Monad.Trans.Class
 import           Multilinear.Class          as Multilinear
 import           Multilinear.Generic
@@ -109,4 +109,7 @@ prog = do
 -- ENTRY POINT
 main :: IO (Either SomeException ())
 main = runEitherT prog
-  
+-}
+
+-- ENTRY POINT
+main = putStrLn "Tests to do..."

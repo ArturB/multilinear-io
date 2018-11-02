@@ -14,17 +14,17 @@ module Multilinear.Generic.Serialize (
     fromBinary, fromBinaryFile,
     Multilinear.Generic.Serialize.toJSON, toJSONFile,
     Multilinear.Generic.Serialize.fromJSON, fromJSONFile,
-    fromCSV, toCSV
+    --fromCSV, toCSV
 ) where
 
 import           Codec.Compression.GZip
+import           Conduit
 import           Control.Exception
 import           Control.Monad.Trans.Class
-import           Control.Monad.Trans.Either
+import           Control.Monad.Trans.Except
 import           Control.Monad.Trans.Maybe
 import           Data.Aeson
 import qualified Data.ByteString.Lazy       as ByteString
-import           Data.CSV.Enumerator
 import           Data.Either
 import           Data.Serialize
 import qualified Data.Vector                as Boxed
@@ -48,12 +48,12 @@ invalidIndices = "Indices and its sizes not compatible with structure of matrix!
 deserializationError :: String -- ^ CSV error message
 deserializationError = "Components deserialization error!"
 
-{-| Serialize tensor to binary string -}
+{-| Serialize tensor to zlib compressed binary string -}
 toBinary :: (
     Serialize a 
   ) => Tensor a              -- ^ Tensor to serialize
     -> ByteString.ByteString -- ^ Tensor serialized to lazy ByteString
-toBinary = Data.Serialize.encodeLazy
+toBinary = compress . Data.Serialize.encodeLazy
 
 {-| Write tensor to binary file. Uses compression with gzip -}
 toBinaryFile :: (
@@ -61,23 +61,25 @@ toBinaryFile :: (
   ) => String    -- ^ File name
     -> Tensor a  -- ^ Tensor to serialize
     -> IO ()
-toBinaryFile name = ByteString.writeFile name . compress . toBinary
+toBinaryFile fileName = 
+  runConduitRes $ 
+    sourceLazy . bs .| sinkFile fileName
 
-{-| Deserialize tensor from binary string -}
+{-| Deserialize tensor from zlib compressed binary string -}
 fromBinary :: (
     Serialize a
   ) => ByteString.ByteString    -- ^ ByteString to deserialize
     -> Either String (Tensor a) -- ^ Deserialized tensor or an error message. 
-fromBinary = Data.Serialize.decodeLazy
+fromBinary = Data.Serialize.decodeLazy . decompress
 
 {-| Read tensor from binary file -}
 fromBinaryFile :: (
     Serialize a
-  ) => String                       -- ^ File path. 
-    -> EitherT String IO (Tensor a) -- ^ Deserialized tensor or an error message
-fromBinaryFile name = do
-    contents <- lift $ ByteString.readFile name
-    EitherT $ return $ fromBinary $ decompress contents
+  ) => String                      -- ^ File path. 
+    -> Except String IO (Tensor a) -- ^ Deserialized tensor or an error message
+fromBinaryFile fileName = do
+  contents <- lift $ runConduitRes $ sourceFile fileName .| sinkLazy
+  except $ fromBinary contents
 
 {-| Serialize tensor to JSON string -}
 toJSON :: (
@@ -111,8 +113,8 @@ fromJSONFile name = do
     MaybeT $ return $ Multilinear.Generic.Serialize.fromJSON contents
 
 {-| Read tensor (matrix) components from CSV file. -}
-{-# INLINE fromCSV #-}
-fromCSV :: (
+--{-# INLINE fromCSV #-}
+{-fromCSV :: (
     Num a, Serialize a
   ) => String                                  -- ^ Indices names (one character per index, first character: rows index, second character: columns index)
     -> String                                  -- ^ CSV file name
@@ -133,11 +135,11 @@ fromCSV x = case x of
     else EitherT $ return $ Left $ SomeException $ TypeError deserializationError
 
   _ -> \_ _ -> return $ Err invalidIndices
-
+-}
 
 {-| Write matrix to CSV file. -}
-{-# INLINE toCSV                    #-}
-toCSV :: (
+--{-# INLINE toCSV                    #-}
+{-toCSV :: (
     Num a, Serialize a
   ) => Tensor a  -- ^ Matrix to serialize. If given tensor os not a matrix, an error occurs and no data (0 rows) are saved to file. 
     -> String    -- ^ CSV file name
@@ -152,3 +154,4 @@ toCSV t = case order t of
     in  writeCSVFile (CSVS separator (Just '"') (Just '"') separator) fileName encodedElems
 
   _ -> \_ _ -> return 0
+-}

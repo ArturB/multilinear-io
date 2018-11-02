@@ -8,6 +8,7 @@ copyright:           "2018 Artur M. Brodzki"
 
 extra-source-files:
 - README.md
+- ChangeLog.md
 
 # Metadata used when publishing your package
 synopsis:            Input/output capability for multilinear package. 
@@ -36,7 +37,7 @@ library:
   - bytestring
   - cereal
   - cereal-vector
-  - csv-enumerator
+  - conduit
   - either
   - multilinear >= 0.2.0 && < 0.3
   - transformers
