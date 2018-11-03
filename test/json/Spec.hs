@@ -16,7 +16,7 @@ fileName1 :: String
 fileName1  = "test/m1"
 
 m1 :: Tensor Double
-m1 = Matrix.fromIndices "ij" 500 500 $ \i j -> cos (fromIntegral i) + sin (fromIntegral j)
+m1 = Matrix.fromIndices "ij" 50 50 $ \i j -> cos (fromIntegral i) + sin (fromIntegral j)
 
 writeMatrixJSON :: Tensor Double -> String -> IO ()
 writeMatrixJSON m fileName = do
