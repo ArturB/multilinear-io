@@ -1,3 +1,6 @@
+# 0.3.0.0, 2018-11-14
+- ported to multilinear-0.3.0.0
+
 # 0.2.3, 2018-11-02
 - IO ported to Conduit based
 - support for CSV with cassava

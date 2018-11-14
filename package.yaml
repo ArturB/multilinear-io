@@ -1,5 +1,5 @@
 name:                multilinear-io
-version:             0.2.3
+version:             0.3.0.0
 github:              "ArturB/multilinear-io"
 license:             BSD3
 author:              "Artur M. Brodzki"
@@ -23,7 +23,7 @@ dependencies:
 - base >= 4.7 && < 5
 ghc-options:
 - -O2
-- -Wall
+- -W
 
 default-extensions:
 - DeriveGeneric
@@ -42,7 +42,7 @@ library:
   - cereal-vector
   - conduit
   - either
-  - multilinear >= 0.2.0 && < 0.3
+  - multilinear
   - transformers
   - vector
   - zlib
@@ -58,7 +58,7 @@ tests:
     dependencies:
     - directory
     - either
-    - multilinear >= 0.2.0 && < 0.3
+    - multilinear
     - multilinear-io
     - transformers
   json:
@@ -71,7 +71,7 @@ tests:
     dependencies:
     - directory
     - either
-    - multilinear >= 0.2.0 && < 0.3
+    - multilinear
     - multilinear-io
     - transformers
   csv:
@@ -84,7 +84,7 @@ tests:
     dependencies:
     - directory
     - either
-    - multilinear >= 0.2.0 && < 0.3
+    - multilinear
     - multilinear-io
     - transformers
 
@@ -99,7 +99,7 @@ benchmarks:
     dependencies:
     - criterion
     - directory
-    - multilinear >= 0.2.0 && < 0.3
+    - multilinear
     - multilinear-io
     - deepseq
     - either
