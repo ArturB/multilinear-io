@@ -1,3 +1,7 @@
+# 0.4.0.0, 2018-11-24
+- ported to multilinear-0.4.0.0
+- added more robust tests
+
 # 0.3.0.0, 2018-11-14
 - ported to multilinear-0.3.0.0
 
