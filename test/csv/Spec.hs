@@ -72,7 +72,6 @@ readFormCSV m fileName = do
   else
     ExceptT $ return $ Left "Form deserialization error"
 
-
 writeMatrixCSV :: Tensor Double -> String -> IO ()
 writeMatrixCSV m fileName = do
   let [xsize,ysize] = indexSize <$> indices m
@@ -94,17 +93,20 @@ readMatrixCSV m fileName = do
 main :: IO ()
 main = do
   -- Scalar CSV read/write
-  writeScalarCSV scalar "test/s1.csv"
-  runExceptT $ readScalarCSV scalar "test/s1.csv"
+  writeScalarCSV scalar "test/s1"
+  runExceptT $ readScalarCSV scalar "test/s1"
   -- Vector CSV read/write
-  writeVectorCSV vector "test/v1.csv"
-  runExceptT $ readVectorCSV vector "test/v1.csv"
+  writeVectorCSV vector "test/v1"
+  runExceptT $ readVectorCSV vector "test/v1"
   -- Form CSV read/write
-  writeFormCSV form "test/f1.csv"
-  runExceptT $ readFormCSV form "test/f1.csv"
+  writeFormCSV form "test/f1"
+  runExceptT $ readFormCSV form "test/f1"
   -- Matrix CSV read/write
-  writeMatrixCSV matrix "test/m1.csv"
-  runExceptT $ readMatrixCSV matrix "test/m1.csv"
+  writeMatrixCSV matrix "test/m1"
+  runExceptT $ readMatrixCSV matrix "test/m1"
   -- Remove test file
-  --removeFile $ fileName1 ++ ".csv"
+  removeFile "test/s1.csv"
+  removeFile "test/v1.csv"
+  removeFile "test/f1.csv"
+  removeFile "test/m1.csv"
   return ()
