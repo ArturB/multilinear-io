@@ -1,5 +1,5 @@
 name:                multilinear-io
-version:             0.3.0.0
+version:             0.4.0.0
 github:              "ArturB/multilinear-io"
 license:             BSD3
 author:              "Artur M. Brodzki"
@@ -11,13 +11,13 @@ extra-source-files:
 - ChangeLog.md
 
 # Metadata used when publishing your package
-synopsis:            Input/output capability for multilinear package. 
+synopsis:            Conduit-vased input/output capability for multilinear package. 
 category:            Machine learning
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         "Input & output capability for multilinear package <https://hackage.haskell.org/package/multilinear>. Supports various file formats: binary, CSV, JSON. More information available on GitHub: <https://github.com/ArturB/multilinear-io#readme>"
+description:         "Conduit-based input & output capability for multilinear package <https://hackage.haskell.org/package/multilinear>. Supports various file formats: binary, CSV, JSON. More information available on GitHub: <https://github.com/ArturB/multilinear-io#readme>"
 
 dependencies:
 - base >= 4.7 && < 5
