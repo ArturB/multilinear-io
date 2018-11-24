@@ -37,7 +37,6 @@ import qualified Data.Vector.Unboxed        as Unboxed
 import           Multilinear.Generic
 import qualified Multilinear.Index.Finite   as Finite
 import           Multilinear.Index.Finite.Serialize ()
-import           Multilinear.Index.Infinite.Serialize ()
 
 -- Binary serialization instance
 instance (Serialize a, Unboxed.Unbox a) => Serialize (Tensor a)
