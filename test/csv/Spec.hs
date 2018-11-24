@@ -45,7 +45,7 @@ readScalarCSV m fileName = do
 
 writeVectorCSV :: Tensor Double -> String -> IO ()
 writeVectorCSV m fileName = do
-  let size = indexSize <$> head $ indices m
+  let size = fromJust . indexSize <$> head $ indices m
   putStrLn $ "Writing " ++ show size ++ " elements vector to " ++ fileName ++ ".csv..."
   m `toCSVFile` (fileName ++ ".csv")
   putStrLn "Vector successfully written!"
@@ -61,7 +61,7 @@ readVectorCSV m fileName = do
 
 writeFormCSV :: Tensor Double -> String -> IO ()
 writeFormCSV m fileName = do
-  let size = indexSize <$> head $ indices m
+  let size = fromJust . indexSize <$> head $ indices m
   putStrLn $ "Writing " ++ show size ++ " elements form to " ++ fileName ++ ".csv..."
   m `toCSVFile` (fileName ++ ".csv")
   putStrLn "Form successfully written!"
