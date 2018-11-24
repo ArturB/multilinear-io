@@ -13,9 +13,6 @@ import qualified Multilinear.Matrix         as Matrix
 import qualified Multilinear.Vector         as Vector
 import           System.Directory
 
-fileName1 :: String
-fileName1  = "test/m1"
-
 matrix :: Tensor Double
 matrix = Matrix.fromIndices "ij" 50 50 $ \i j -> cos (fromIntegral i) + sin (fromIntegral j)
 
@@ -97,17 +94,17 @@ readMatrixCSV m fileName = do
 main :: IO ()
 main = do
   -- Scalar CSV read/write
-  writeScalarCSV scalar fileName1
-  runExceptT $ readScalarCSV scalar fileName1
+  writeScalarCSV scalar "test/s1.csv"
+  runExceptT $ readScalarCSV scalar "test/s1.csv"
   -- Vector CSV read/write
-  writeVectorCSV vector fileName1
-  runExceptT $ readVectorCSV vector fileName1
+  writeVectorCSV vector "test/v1.csv"
+  runExceptT $ readVectorCSV vector "test/v1.csv"
   -- Form CSV read/write
-  writeFormCSV form fileName1
-  runExceptT $ readFormCSV form fileName1
+  writeFormCSV form "test/f1.csv"
+  runExceptT $ readFormCSV form "test/f1.csv"
   -- Matrix CSV read/write
-  writeMatrixCSV matrix fileName1
-  runExceptT $ readMatrixCSV matrix fileName1
+  writeMatrixCSV matrix "test/m1.csv"
+  runExceptT $ readMatrixCSV matrix "test/m1.csv"
   -- Remove test file
-  removeFile $ fileName1 ++ ".csv"
+  --removeFile $ fileName1 ++ ".csv"
   return ()
