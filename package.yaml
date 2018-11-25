@@ -11,7 +11,7 @@ extra-source-files:
 - ChangeLog.md
 
 # Metadata used when publishing your package
-synopsis:            Conduit-vased input/output capability for multilinear package. 
+synopsis:            Conduit-based input/output capability for multilinear package. 
 category:            Machine learning
 
 # To avoid duplicated efforts in documentation and dealing with the
