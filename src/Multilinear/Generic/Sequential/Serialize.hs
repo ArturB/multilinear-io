@@ -34,7 +34,7 @@ import           Data.Serialize
 import qualified Data.Vector                as Boxed
 import           Data.Vector.Serialize      ()
 import qualified Data.Vector.Unboxed        as Unboxed
-import           Multilinear.Generic
+import           Multilinear.Generic.Sequential
 import qualified Multilinear.Index.Finite   as Finite
 import           Multilinear.Index.Finite.Serialize ()
 
